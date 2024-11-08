@@ -58,8 +58,27 @@ public class PathFinder
             // You just need to fill code inside this foreach only
             foreach (Tile nextTile in current.tile.Adjacents)
             {
-                
+                // Skip if the next tile is already in the Done List or it's not walkable
+                if (DoneList.Exists(n => n.tile == nextTile) || !nextTile.isPassable)
+                    continue;
+
+                // Calculate the new G cost to reach this neighbor (current cost + movement cost)
+                double newCost = current.costSoFar + HeuristicsDistance(current.tile, nextTile);
+
+                // If the next tile is not in the TODO list or we found a better path to it
+                Node existingNode = TODOList.Find(n => n.tile == nextTile);
+                if (existingNode == null || newCost < existingNode.costSoFar)
+                {
+                    // Calculate the H (heuristic) cost (Manhattan distance in this case)
+                    double heuristic = HeuristicsDistance(nextTile, goalTile);
+                    double priority = newCost + heuristic; // F = G + H
+
+                    // Create a new node and add it to the TODO list
+                    Node newNode = new Node(nextTile, priority, current, newCost);
+                    TODOList.Add(newNode);
+                }
             }
+
         }
         return new Queue<Tile>(); // Returns an empty Path if no path is found
     }
