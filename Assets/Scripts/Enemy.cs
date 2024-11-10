@@ -131,12 +131,234 @@ public class Enemy : MonoBehaviour
     // TODO: Enemy chases the player when it is nearby
     private void HandleEnemyBehavior2()
     {
-        
+        switch (state)
+        {
+            case EnemyState.DEFAULT:
+                // If the player is within vision range, start chasing them
+                if (Vector3.Distance(transform.position, playerGameObject.transform.position) <= visionDistance)
+                {
+                    state = EnemyState.CHASE;
+                }
+                else
+                {
+                    // Otherwise, move randomly
+                    material.color = Color.yellow; // You can change the color to differentiate
+                    if (path.Count <= 0) path = pathFinder.RandomPath(currentTile, 20);
+
+                    if (path.Count > 0)
+                    {
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                break;
+
+            case EnemyState.MOVING:
+                // Move towards the current target
+                velocity = targetTile.gameObject.transform.position - transform.position;
+                transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+
+                // If we have reached the target tile, and we are chasing the player, update the path
+                if (Vector3.Distance(transform.position, targetTile.gameObject.transform.position) <= 0.05f)
+                {
+                    currentTile = targetTile;
+                    if (state == EnemyState.CHASE)
+                    {
+                        // After reaching the target, recalculate the path towards the player’s last known position
+                        path.Clear();
+                        path = pathFinder.RandomPath(currentTile, 20); // Use random path to simulate chasing
+                        if (path.Count > 0)
+                        {
+                            targetTile = path.Dequeue();
+                        }
+                        else
+                        {
+                            state = EnemyState.DEFAULT; // No path to the player, revert to default state
+                        }
+                    }
+                    else
+                    {
+                        state = EnemyState.DEFAULT; // Revert to default behavior when not chasing
+                    }
+                }
+                break;
+
+            case EnemyState.CHASE:
+                // If the player is within vision range, we continue chasing
+                if (Vector3.Distance(transform.position, playerGameObject.transform.position) <= visionDistance)
+                {
+                    // The enemy chases the last known position of the player
+                    targetTile = playerGameObject.GetComponent<Player>().currentTile;
+                    path.Clear();
+                    path = pathFinder.RandomPath(currentTile, 20);
+
+                    if (path.Count > 0)
+                    {
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                else
+                {
+                    // If the player is no longer within vision range, revert to default state
+                    state = EnemyState.DEFAULT;
+                }
+                break;
+
+            default:
+                state = EnemyState.DEFAULT;
+                break;
+        }
     }
 
     // TODO: Third behavior (Describe what it does)
     private void HandleEnemyBehavior3()
     {
+        switch (state)
+        {
+            case EnemyState.DEFAULT:
+                // If the player is within vision range, start chasing them
+                if (Vector3.Distance(transform.position, playerGameObject.transform.position) <= visionDistance)
+                {
+                    state = EnemyState.CHASE;
+                }
+                else
+                {
+                    // Otherwise, move randomly
+                    material.color = Color.yellow; // You can change the color to differentiate
+                    if (path.Count <= 0) path = pathFinder.RandomPath(currentTile, 20);
 
+                    if (path.Count > 0)
+                    {
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                break;
+
+            case EnemyState.MOVING:
+                // Move towards the current target
+                velocity = targetTile.gameObject.transform.position - transform.position;
+                transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+
+                // If we have reached the target tile, and we are chasing the player, update the path
+                if (Vector3.Distance(transform.position, targetTile.gameObject.transform.position) <= 0.05f)
+                {
+                    currentTile = targetTile;
+                    if (state == EnemyState.CHASE)
+                    {
+                        // After reaching the target, recalculate the path towards a new target offset
+                        path.Clear();
+
+                        // Get a position 2 tiles away from the player (you can change this offset as needed)
+                        Vector3 playerPosition = playerGameObject.transform.position;
+
+                        // Offset in the X and Z directions (assuming 2 tiles away)
+                        Vector3 offset = new Vector3(Random.Range(-2, 3), 0, Random.Range(-2, 3)); // Adjust the range as needed
+                        Vector3 newTargetPosition = playerPosition + offset;
+
+                        // Integrate FindClosestWalkableTile directly here
+                        Tile closestTile = null;
+                        float closestDistance = float.MaxValue;
+
+                        // Iterate through all tiles and find the closest walkable one
+                        foreach (Transform child in mapGenerator.transform)
+                        {
+                            Tile tile = child.GetComponent<Tile>();
+                            if (tile != null && tile.mapTile.Walkable)
+                            {
+                                float distance = Vector3.Distance(newTargetPosition, tile.transform.position);
+                                if (distance < closestDistance)
+                                {
+                                    closestDistance = distance;
+                                    closestTile = tile;
+                                }
+                            }
+                        }
+
+                        if (closestTile != null)
+                        {
+                            targetTile = closestTile;
+                            path = pathFinder.RandomPath(currentTile, 20); // Use random path to simulate chasing
+
+                            if (path.Count > 0)
+                            {
+                                targetTile = path.Dequeue();
+                            }
+                            else
+                            {
+                                state = EnemyState.DEFAULT; // No path to the new target, revert to default state
+                            }
+                        }
+                        else
+                        {
+                            state = EnemyState.DEFAULT; // No valid target tile, revert to default state
+                        }
+                    }
+                    else
+                    {
+                        state = EnemyState.DEFAULT; // Revert to default behavior when not chasing
+                    }
+                }
+                break;
+
+            case EnemyState.CHASE:
+                // If the player is within vision range, we continue chasing
+                if (Vector3.Distance(transform.position, playerGameObject.transform.position) <= visionDistance)
+                {
+                    // The enemy chases a tile 2 tiles away from the player
+                    Vector3 playerPosition = playerGameObject.transform.position;
+
+                    // Offset in the X and Z directions (assuming 2 tiles away)
+                    Vector3 offset = new Vector3(Random.Range(-2, 3), 0, Random.Range(-2, 3)); // Adjust the range as needed
+                    Vector3 newTargetPosition = playerPosition + offset;
+
+                    // Integrate FindClosestWalkableTile directly here
+                    Tile closestTile = null;
+                    float closestDistance = float.MaxValue;
+
+                    // Iterate through all tiles and find the closest walkable one
+                    foreach (Transform child in mapGenerator.transform)
+                    {
+                        Tile tile = child.GetComponent<Tile>();
+                        if (tile != null && tile.mapTile.Walkable)
+                        {
+                            float distance = Vector3.Distance(newTargetPosition, tile.transform.position);
+                            if (distance < closestDistance)
+                            {
+                                closestDistance = distance;
+                                closestTile = tile;
+                            }
+                        }
+                    }
+
+                    if (closestTile != null)
+                    {
+                        targetTile = closestTile;
+                        path.Clear();
+                        path = pathFinder.RandomPath(currentTile, 20);
+
+                        if (path.Count > 0)
+                        {
+                            targetTile = path.Dequeue();
+                            state = EnemyState.MOVING;
+                        }
+                    }
+                    else
+                    {
+                        state = EnemyState.DEFAULT; // If no valid path found, revert to default state
+                    }
+                }
+                else
+                {
+                    // If the player is no longer within vision range, revert to default state
+                    state = EnemyState.DEFAULT;
+                }
+                break;
+
+            default:
+                state = EnemyState.DEFAULT;
+                break;
+        }
     }
 }
