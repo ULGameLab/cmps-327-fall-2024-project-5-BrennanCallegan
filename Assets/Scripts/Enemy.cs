@@ -142,7 +142,7 @@ public class Enemy : MonoBehaviour
                 else
                 {
                     // Otherwise, move randomly
-                    material.color = Color.yellow; // You can change the color to differentiate
+                    material.color = Color.red; // You can change the color to differentiate
                     if (path.Count <= 0) path = pathFinder.RandomPath(currentTile, 20);
 
                     if (path.Count > 0)
@@ -211,7 +211,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // TODO: Third behavior (Describe what it does)
+    // TODO: Third behavior works similar to behavior two; however, enemy goes to two tiles behind the player.
     private void HandleEnemyBehavior3()
     {
         switch (state)
@@ -225,7 +225,7 @@ public class Enemy : MonoBehaviour
                 else
                 {
                     // Otherwise, move randomly
-                    material.color = Color.yellow; // You can change the color to differentiate
+                    material.color = Color.red; // You can change the color to differentiate
                     if (path.Count <= 0) path = pathFinder.RandomPath(currentTile, 20);
 
                     if (path.Count > 0)
