@@ -166,7 +166,8 @@ public class Enemy : MonoBehaviour
                     {
                         // After reaching the target, recalculate the path towards the player’s last known position
                         path.Clear();
-                        path = pathFinder.RandomPath(currentTile, 20); // Use random path to simulate chasing
+                        path = pathFinder.FindPathAStar(currentTile, targetTile); // Use random path to simulate chasing
+                        velocity = targetTile.gameObject.transform.position - transform.position;
                         if (path.Count > 0)
                         {
                             targetTile = path.Dequeue();
@@ -190,7 +191,7 @@ public class Enemy : MonoBehaviour
                     // The enemy chases the last known position of the player
                     targetTile = playerGameObject.GetComponent<Player>().currentTile;
                     path.Clear();
-                    path = pathFinder.RandomPath(currentTile, 20);
+                    path = pathFinder.FindPathAStar(currentTile, targetTile);
 
                     if (path.Count > 0)
                     {
@@ -279,7 +280,7 @@ public class Enemy : MonoBehaviour
                         if (closestTile != null)
                         {
                             targetTile = closestTile;
-                            path = pathFinder.RandomPath(currentTile, 20); // Use random path to simulate chasing
+                            path = pathFinder.FindPathAStar(currentTile, targetTile); // Use random path to simulate chasing
 
                             if (path.Count > 0)
                             {
@@ -336,7 +337,7 @@ public class Enemy : MonoBehaviour
                     {
                         targetTile = closestTile;
                         path.Clear();
-                        path = pathFinder.RandomPath(currentTile, 20);
+                        path = pathFinder.FindPathAStar(currentTile, targetTile);
 
                         if (path.Count > 0)
                         {
